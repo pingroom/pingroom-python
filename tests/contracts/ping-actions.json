@@ -1,0 +1,451 @@
+{
+    "_comment": "Buttons on a Ping. Written by laravel/tests/Unit/PingActionsContractTest.php; regenerate with WRITE_PING_ACTIONS_CONTRACT=1. Do not edit by hand.",
+    "limits": {
+        "max_actions": 3,
+        "id_pattern": "^[a-z0-9_-]{1,24}$",
+        "label_max": 26,
+        "url_max": 2048,
+        "body_max_bytes": 1024,
+        "body_max_keys": 10,
+        "run_window_hours": 24,
+        "types": [
+            "open_url",
+            "webhook"
+        ],
+        "styles": [
+            "default",
+            "primary",
+            "danger"
+        ]
+    },
+    "signing": {
+        "info": "pingroom/ping-actions/signing/v1",
+        "vectors": [
+            {
+                "jwt_secret": "testing-secret-must-be-at-least-32-bytes-long",
+                "notification_id": "9b2f5c1e-0000-4000-8000-000000000001",
+                "key_hex": "b0f5b5f90f5e96896582351bfb3b229b64b24322eed0312b9b8e65b0bff6bc4d",
+                "secret": "81a29861609a0f98edae7253d871a336aa20ef1df78d1dac0da521d983b54623"
+            }
+        ]
+    },
+    "reserved_labels": [
+        "abbrechen",
+        "abgeben",
+        "ack",
+        "acknowledge",
+        "annuler",
+        "annulla",
+        "balasdenganpong",
+        "batal",
+        "benhallederim",
+        "bestätigen",
+        "bırak",
+        "cancel",
+        "cancelar",
+        "cipensoio",
+        "completato",
+        "concluir",
+        "concluído",
+        "conferma",
+        "confirm",
+        "confirmar",
+        "confirmer",
+        "couperlesondusalon",
+        "dejarlo",
+        "devolverpong",
+        "done",
+        "erledigt",
+        "euassumo",
+        "eucuidodisso",
+        "fatto",
+        "fertig",
+        "ichübernehme",
+        "illtakeit",
+        "i̇ptal",
+        "jemenoccupe",
+        "laisser",
+        "lascia",
+        "lepaskan",
+        "letgo",
+        "liberar",
+        "listo",
+        "meencargoyo",
+        "meneoccupoio",
+        "mute",
+        "muteroom",
+        "odayısessizeal",
+        "onayla",
+        "pingroom",
+        "pong",
+        "pongback",
+        "ponggönder",
+        "pongzurück",
+        "pongभेजें",
+        "pongを返す",
+        "raumstummschalten",
+        "renvoyerunpong",
+        "respondercompong",
+        "rispondiconpong",
+        "sahkan",
+        "sayaambil",
+        "sayauruskan",
+        "selesai",
+        "senyapkanbilik",
+        "silenciarsala",
+        "silenziastanza",
+        "soltar",
+        "tamamla",
+        "tamamlandı",
+        "terminé",
+        "unmute",
+        "беру",
+        "готово",
+        "ответитьpong",
+        "отказаться",
+        "отключитьзвуккомнаты",
+        "отмена",
+        "отменить",
+        "подтвердить",
+        "явозьмусь",
+        "أتخلىعنه",
+        "إلغاء",
+        "انجامشد",
+        "بیصداکردناتاق",
+        "تأكيد",
+        "تأیید",
+        "تخلَّعنه",
+        "تم",
+        "ردبـpong",
+        "رهاکردن",
+        "سأتولىالأمر",
+        "كتمالغرفة",
+        "لغو",
+        "منانجامشمیدهم",
+        "پاسخباpong",
+        "छोड़दें",
+        "छोड़ें",
+        "पुष्टिकरें",
+        "पूराहुआ",
+        "मैंइसेलेलूँ",
+        "मैंसंभालूँगा",
+        "रद्दकरें",
+        "रूमम्यूटकरें",
+        "キャンセル",
+        "ルームをミュート",
+        "取消",
+        "回复pong",
+        "完了",
+        "完成",
+        "将房间静音",
+        "已完成",
+        "引き受ける",
+        "我來處理",
+        "我来",
+        "我来处理",
+        "手放す",
+        "放弃",
+        "放棄",
+        "确认",
+        "確認"
+    ],
+    "label_vectors": [
+        {
+            "label": "Open dashboard",
+            "accepted": true,
+            "cleaned": "Open dashboard",
+            "reason": null
+        },
+        {
+            "label": "  Clean   up now  ",
+            "accepted": true,
+            "cleaned": "Clean up now",
+            "reason": null
+        },
+        {
+            "label": "🧹 Clean up",
+            "accepted": true,
+            "cleaned": "🧹 Clean up",
+            "reason": null
+        },
+        {
+            "label": "Mark done",
+            "accepted": true,
+            "cleaned": "Mark done",
+            "reason": null
+        },
+        {
+            "label": "Deploy v2.0",
+            "accepted": true,
+            "cleaned": "Deploy v2.0",
+            "reason": null
+        },
+        {
+            "label": "aaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "accepted": true,
+            "cleaned": "aaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "reason": null
+        },
+        {
+            "label": "aaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "accepted": false,
+            "cleaned": null,
+            "reason": "A button label is at most 26 characters."
+        },
+        {
+            "label": "",
+            "accepted": false,
+            "cleaned": null,
+            "reason": "A button needs a label."
+        },
+        {
+            "label": "   ",
+            "accepted": false,
+            "cleaned": null,
+            "reason": "A button needs a label."
+        },
+        {
+            "label": "Approve\nnow",
+            "accepted": false,
+            "cleaned": null,
+            "reason": "A button label may not contain line breaks, control characters or invisible formatting characters."
+        },
+        {
+            "label": "Pay ‮lapyap",
+            "accepted": false,
+            "cleaned": null,
+            "reason": "A button label may not contain line breaks, control characters or invisible formatting characters."
+        },
+        {
+            "label": "Pong​ Back",
+            "accepted": false,
+            "cleaned": null,
+            "reason": "A button label may not contain line breaks, control characters or invisible formatting characters."
+        },
+        {
+            "label": "👨‍👩‍👧 Family",
+            "accepted": true,
+            "cleaned": "👨‍👩‍👧 Family",
+            "reason": null
+        },
+        {
+            "label": "paypal.com",
+            "accepted": false,
+            "cleaned": null,
+            "reason": "A button label may not contain a web address, domain name or IP address. The app shows where the button goes."
+        },
+        {
+            "label": "Log in at login.bank.co",
+            "accepted": false,
+            "cleaned": null,
+            "reason": "A button label may not contain a web address, domain name or IP address. The app shows where the button goes."
+        },
+        {
+            "label": "www.example",
+            "accepted": false,
+            "cleaned": null,
+            "reason": "A button label may not contain a web address, domain name or IP address. The app shows where the button goes."
+        },
+        {
+            "label": "https://x",
+            "accepted": false,
+            "cleaned": null,
+            "reason": "A button label may not contain a web address, domain name or IP address. The app shows where the button goes."
+        },
+        {
+            "label": "Open 10.0.0.5",
+            "accepted": false,
+            "cleaned": null,
+            "reason": "A button label may not contain a web address, domain name or IP address. The app shows where the button goes."
+        },
+        {
+            "label": "ｐａｙｐａｌ．ｃｏｍ",
+            "accepted": false,
+            "cleaned": null,
+            "reason": "A button label may not contain a web address, domain name or IP address. The app shows where the button goes."
+        },
+        {
+            "label": "👍 Pong Back",
+            "accepted": false,
+            "cleaned": null,
+            "reason": "That label is one of PingRoom's own buttons. Choose another."
+        },
+        {
+            "label": "mute room",
+            "accepted": false,
+            "cleaned": null,
+            "reason": "That label is one of PingRoom's own buttons. Choose another."
+        },
+        {
+            "label": "✓ Confirm",
+            "accepted": false,
+            "cleaned": null,
+            "reason": "That label is one of PingRoom's own buttons. Choose another."
+        },
+        {
+            "label": "Done",
+            "accepted": false,
+            "cleaned": null,
+            "reason": "That label is one of PingRoom's own buttons. Choose another."
+        },
+        {
+            "label": "I'll take it",
+            "accepted": false,
+            "cleaned": null,
+            "reason": "That label is one of PingRoom's own buttons. Choose another."
+        },
+        {
+            "label": "Bestätigen",
+            "accepted": false,
+            "cleaned": null,
+            "reason": "That label is one of PingRoom's own buttons. Choose another."
+        },
+        {
+            "label": "Готово",
+            "accepted": false,
+            "cleaned": null,
+            "reason": "That label is one of PingRoom's own buttons. Choose another."
+        },
+        {
+            "label": "PingRoom",
+            "accepted": false,
+            "cleaned": null,
+            "reason": "That label is one of PingRoom's own buttons. Choose another."
+        }
+    ],
+    "url_vectors": [
+        {
+            "type": "open_url",
+            "url": "https://grafana.example.com/d/disk",
+            "accepted": true,
+            "host": "grafana.example.com",
+            "reason": null
+        },
+        {
+            "type": "open_url",
+            "url": "https://Grafana.Example.com:3000/d?x=1#y",
+            "accepted": true,
+            "host": "grafana.example.com",
+            "reason": null
+        },
+        {
+            "type": "webhook",
+            "url": "https://ops.example.com/cleanup",
+            "accepted": true,
+            "host": "ops.example.com",
+            "reason": null
+        },
+        {
+            "type": "webhook",
+            "url": "https://ops.example.com:8443/cleanup",
+            "accepted": false,
+            "host": null,
+            "reason": "A webhook button url cannot name a port: deliveries go to the standard HTTPS port."
+        },
+        {
+            "type": "open_url",
+            "url": "https://xn--bcher-kva.ch/",
+            "accepted": true,
+            "host": "xn--bcher-kva.ch",
+            "reason": null
+        },
+        {
+            "type": "open_url",
+            "url": "http://example.com/",
+            "accepted": false,
+            "host": null,
+            "reason": "A button url must start with https://."
+        },
+        {
+            "type": "open_url",
+            "url": "HTTPS://example.com/",
+            "accepted": false,
+            "host": null,
+            "reason": "A button url must start with https://."
+        },
+        {
+            "type": "open_url",
+            "url": "javascript:alert(1)",
+            "accepted": false,
+            "host": null,
+            "reason": "A button url must start with https://."
+        },
+        {
+            "type": "open_url",
+            "url": "https://paypal.com@evil.example.com/",
+            "accepted": false,
+            "host": null,
+            "reason": "A button url needs a plain hostname: no user name or password, no IP address in brackets."
+        },
+        {
+            "type": "open_url",
+            "url": "https://example.com\\@evil.com/",
+            "accepted": false,
+            "host": null,
+            "reason": "A button url may contain only printable ASCII characters: percent-encode the rest, and give an internationalized domain in its punycode (xn--) form."
+        },
+        {
+            "type": "open_url",
+            "url": "https://pаypal.com/",
+            "accepted": false,
+            "host": null,
+            "reason": "A button url may contain only printable ASCII characters: percent-encode the rest, and give an internationalized domain in its punycode (xn--) form."
+        },
+        {
+            "type": "open_url",
+            "url": "https://example.com/über",
+            "accepted": false,
+            "host": null,
+            "reason": "A button url may contain only printable ASCII characters: percent-encode the rest, and give an internationalized domain in its punycode (xn--) form."
+        },
+        {
+            "type": "open_url",
+            "url": "https://127.0.0.1/",
+            "accepted": false,
+            "host": null,
+            "reason": "A button url needs a public hostname such as example.com: no IP address, localhost or internal name."
+        },
+        {
+            "type": "open_url",
+            "url": "https://2130706433/",
+            "accepted": false,
+            "host": null,
+            "reason": "A button url needs a public hostname such as example.com: no IP address, localhost or internal name."
+        },
+        {
+            "type": "open_url",
+            "url": "https://[::1]/",
+            "accepted": false,
+            "host": null,
+            "reason": "A button url needs a plain hostname: no user name or password, no IP address in brackets."
+        },
+        {
+            "type": "open_url",
+            "url": "https://localhost/",
+            "accepted": false,
+            "host": null,
+            "reason": "A button url needs a public hostname such as example.com: no IP address, localhost or internal name."
+        },
+        {
+            "type": "webhook",
+            "url": "https://db.internal/",
+            "accepted": false,
+            "host": null,
+            "reason": "A button url needs a public hostname such as example.com: no IP address, localhost or internal name."
+        },
+        {
+            "type": "open_url",
+            "url": "https://intranet/",
+            "accepted": false,
+            "host": null,
+            "reason": "A button url needs a public hostname such as example.com: no IP address, localhost or internal name."
+        },
+        {
+            "type": "open_url",
+            "url": "https://example.com./",
+            "accepted": false,
+            "host": null,
+            "reason": "A button url needs a public hostname such as example.com: no IP address, localhost or internal name."
+        }
+    ]
+}

@@ -1,0 +1,224 @@
+{
+    "contract": "live-templates",
+    "generated_by": "laravel/tests/Unit/LiveTemplatesContractTest.php",
+    "regenerate": "cd laravel && WRITE_LIVE_TEMPLATES_CONTRACT=1 php artisan test --compact tests/Unit/LiveTemplatesContractTest.php",
+    "fallback_template": "status",
+    "message_max": 256,
+    "templates": [
+        "status",
+        "steps",
+        "progress",
+        "metrics",
+        "countdown",
+        "question",
+        "matchup",
+        "claim",
+        "timer",
+        "value",
+        "stats"
+    ],
+    "template_fields": {
+        "steps": [
+            "steps",
+            "current_step"
+        ],
+        "progress": [
+            "progress",
+            "segments",
+            "current_segment"
+        ],
+        "metrics": [
+            "metrics"
+        ],
+        "countdown": [
+            "deadline_at",
+            "duration_seconds"
+        ],
+        "question": [
+            "prompt",
+            "options"
+        ],
+        "matchup": [
+            "left",
+            "right",
+            "center"
+        ],
+        "claim": [
+            "deadline_at"
+        ],
+        "timer": [
+            "started_at"
+        ],
+        "value": [
+            "value",
+            "value_label",
+            "delta",
+            "trend"
+        ],
+        "stats": [
+            "stats"
+        ]
+    },
+    "immutable_fields": {
+        "steps": [
+            "steps"
+        ],
+        "progress": [
+            "segments"
+        ],
+        "timer": [
+            "started_at"
+        ]
+    },
+    "fields": {
+        "center": {
+            "type": "string",
+            "max": 40
+        },
+        "current_segment": {
+            "type": "integer",
+            "min": 0,
+            "max": 20
+        },
+        "current_step": {
+            "type": "integer",
+            "min": 0,
+            "max": 8
+        },
+        "deadline_at": {
+            "type": "integer",
+            "min": 0,
+            "max": 4102444800
+        },
+        "delta": {
+            "type": "string",
+            "max": 12
+        },
+        "duration_seconds": {
+            "type": "integer",
+            "min": 1,
+            "max": 4102444800
+        },
+        "left": {
+            "type": "object",
+            "keys": {
+                "label": {
+                    "type": "string",
+                    "max": 24
+                },
+                "value": {
+                    "type": "string",
+                    "max": 24
+                },
+                "iconSvg": {
+                    "type": "string",
+                    "max": 4096
+                }
+            }
+        },
+        "metrics": {
+            "type": "list",
+            "max": 3,
+            "item": {
+                "label": {
+                    "type": "string",
+                    "max": 24
+                },
+                "value": {
+                    "type": "string",
+                    "max": 24
+                }
+            }
+        },
+        "options": {
+            "type": "list",
+            "max": 4,
+            "item": {
+                "value": {
+                    "type": "string",
+                    "max": 64
+                },
+                "label": {
+                    "type": "string",
+                    "max": 40
+                }
+            }
+        },
+        "progress": {
+            "type": "numeric",
+            "min": 0,
+            "max": 1
+        },
+        "prompt": {
+            "type": "string",
+            "max": 256
+        },
+        "right": {
+            "type": "object",
+            "keys": {
+                "label": {
+                    "type": "string",
+                    "max": 24
+                },
+                "value": {
+                    "type": "string",
+                    "max": 24
+                },
+                "iconSvg": {
+                    "type": "string",
+                    "max": 4096
+                }
+            }
+        },
+        "segments": {
+            "type": "integer",
+            "min": 2,
+            "max": 20
+        },
+        "started_at": {
+            "type": "integer",
+            "min": 0,
+            "max": 4102444800
+        },
+        "stats": {
+            "type": "list",
+            "min": 4,
+            "max": 8,
+            "item": {
+                "label": {
+                    "type": "string",
+                    "max": 24
+                },
+                "value": {
+                    "type": "string",
+                    "max": 24
+                }
+            }
+        },
+        "steps": {
+            "type": "list",
+            "min": 2,
+            "max": 8,
+            "item": {
+                "type": "string",
+                "max": 40
+            }
+        },
+        "trend": {
+            "type": "string",
+            "one_of": [
+                "up",
+                "down",
+                "flat"
+            ]
+        },
+        "value": {
+            "type": "string",
+            "max": 24
+        },
+        "value_label": {
+            "type": "string",
+            "max": 24
+        }
+    }
+}

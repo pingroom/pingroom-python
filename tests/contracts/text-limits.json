@@ -1,0 +1,168 @@
+{
+    "contract": "text-limits",
+    "generated_by": "laravel/tests/Unit/TextLimitsContractTest.php",
+    "regenerate": "cd laravel && WRITE_TEXT_LIMITS_CONTRACT=1 php artisan test --compact tests/Unit/TextLimitsContractTest.php",
+    "units": {
+        "code_points": "Unicode code points, what Laravel string max/min count with mb_strlen. Not UTF-16 units and not graphemes.",
+        "bytes": "Bytes of the uploaded file (Laravel file max is in kilobytes of 1024 bytes)."
+    },
+    "fields": {
+        "room.name": {
+            "label": "Room name",
+            "unit": "code_points",
+            "max": 24,
+            "laravel": [
+                "StoreRoomRequest.name",
+                "UpdateRoomRequest.name"
+            ]
+        },
+        "room.description": {
+            "label": "Room description",
+            "unit": "code_points",
+            "max": 120,
+            "laravel": [
+                "StoreRoomRequest.description",
+                "UpdateRoomRequest.description"
+            ]
+        },
+        "room.handle": {
+            "label": "Public room handle",
+            "unit": "code_points",
+            "min": 3,
+            "max": 20,
+            "laravel": [
+                "StoreRoomRequest.handle"
+            ]
+        },
+        "room.password.create": {
+            "label": "Room password when the room is created",
+            "unit": "code_points",
+            "min": 6,
+            "max": 50,
+            "laravel": [
+                "StoreRoomRequest.password"
+            ]
+        },
+        "room.password.update": {
+            "label": "Room password when it is set on an existing room",
+            "unit": "code_points",
+            "min": 6,
+            "max": 72,
+            "laravel": [
+                "UpdateRoomPasswordRequest.password"
+            ]
+        },
+        "personal_room.name": {
+            "label": "Personal room name",
+            "unit": "code_points",
+            "max": 30,
+            "laravel": [
+                "StorePersonalRoomRequest.name",
+                "UpdatePersonalRoomRequest.name"
+            ]
+        },
+        "personal_room.handle": {
+            "label": "Personal room handle",
+            "unit": "code_points",
+            "min": 3,
+            "max": 20,
+            "laravel": [
+                "StorePersonalRoomRequest.handle",
+                "UpdatePersonalRoomRequest.handle"
+            ]
+        },
+        "personal_room.pause_message": {
+            "label": "Take-a-break message",
+            "unit": "code_points",
+            "max": 280,
+            "laravel": [
+                "PausePersonalRoomRequest.pause_message"
+            ]
+        },
+        "contact_share.note": {
+            "label": "Connection note",
+            "unit": "code_points",
+            "max": 500,
+            "laravel": [
+                "UpdateContactShareNoteRequest.note"
+            ]
+        },
+        "qr_image.size": {
+            "label": "QR centre image size",
+            "unit": "bytes",
+            "max": 5242880,
+            "laravel": [
+                "UploadQrImageRequest.image (ImageUploadService::validationRules, max in KB)"
+            ]
+        },
+        "quick_ping.label": {
+            "label": "Quick Ping name",
+            "unit": "code_points",
+            "max": 255,
+            "app_cap": 28,
+            "app_cap_reason": "A Quick Ping name is shared inside a preset, and PresetContentRules::slotProblem refuses a label past presets.label_max (see preset.slot_label). The server keeps 255 for agent callers, so every app editor stops at the preset limit instead.",
+            "laravel": [
+                "UpdateQuickActionRequest.label"
+            ]
+        },
+        "preset.title": {
+            "label": "Preset title",
+            "unit": "code_points",
+            "max": 40,
+            "laravel": [
+                "StorePingPresetRequest.title",
+                "UpdatePingPresetRequest.title"
+            ]
+        },
+        "preset.slot_label": {
+            "label": "Quick Ping name inside a shared preset",
+            "unit": "code_points",
+            "max": 28,
+            "laravel": [
+                "PresetContentRules::slotProblem (presets.label_max)"
+            ]
+        },
+        "question.option_label": {
+            "label": "Question or poll option label",
+            "unit": "code_points",
+            "max": 40,
+            "app_cap": 20,
+            "app_cap_reason": "The phone and the web stop an option at 20 because it has to fit a half-width answer pill and the answered row beside the responder name (mobile/constants/pingTextLimits.ts). The server keeps 40 for agent and API callers.",
+            "laravel": [
+                "StoreQuestionRequest::withValidator (option label, mb_strlen)"
+            ]
+        },
+        "ping.message.private": {
+            "label": "Custom Ping message in a private room",
+            "unit": "code_points",
+            "max": 120,
+            "laravel": [
+                "StoreNotificationRequest.message (private room)"
+            ]
+        },
+        "ping.message.public": {
+            "label": "Custom Ping message in a public room",
+            "unit": "code_points",
+            "max": 160,
+            "laravel": [
+                "StoreNotificationRequest.message (public room)"
+            ]
+        },
+        "ping.title": {
+            "label": "Ping title",
+            "unit": "code_points",
+            "max": 40,
+            "laravel": [
+                "StoreNotificationRequest.title"
+            ]
+        },
+        "agent.label": {
+            "label": "Agent label at registration",
+            "unit": "code_points",
+            "max": 120,
+            "laravel": [
+                "AgentRegisterRequest.agent_label"
+            ]
+        }
+    }
+}

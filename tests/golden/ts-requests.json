@@ -1,0 +1,844 @@
+{
+ "typescript_sdk_version": "0.9.0",
+ "scenarios": [
+  {
+   "id": "bc-min",
+   "error": null,
+   "requests": [
+    {
+     "method": "POST",
+     "path": "/api/agent/rooms/ab12/notifications",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test",
+      "content-type": "application/json"
+     },
+     "body": "{\"message\":\"hi\"}"
+    }
+   ]
+  },
+  {
+   "id": "bc-tricky",
+   "error": null,
+   "requests": [
+    {
+     "method": "POST",
+     "path": "/api/agent/rooms/ab12/notifications",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test",
+      "content-type": "application/json"
+     },
+     "body": "{\"message\":\"q \\\" b \\\\ nl \\n tab \\t ctl \\u001f del  é ☃ 😀 / end    \",\"title\":\"T q \\\" b \\\\ nl\",\"data\":{\"k\":\"q \\\" b \\\\ nl \\n tab \\t ctl \\u001f del  é ☃ 😀 / end    \",\"n\":[1,2,{\"z\":null}],\"b\":true,\"i\":-7,\"u\":\"س\"}}"
+    }
+   ]
+  },
+  {
+   "id": "bc-all",
+   "error": null,
+   "requests": [
+    {
+     "method": "POST",
+     "path": "/api/agent/rooms/AB%2012%2Fx/notifications",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test",
+      "content-type": "application/json",
+      "idempotency-key": "key 1"
+     },
+     "body": "{\"message\":\"Build 41 green\",\"title\":\"Deploy\",\"action_number\":3,\"action_icon\":\"rocket\",\"data\":{\"k\":\"v\"},\"correlation_id\":\"corr\",\"reply_to\":\"r\",\"tags\":[\"ci\",\"Main \"],\"attachment_ids\":[\"a1\",\"a2\"],\"requires_ack\":true,\"ack_mode\":\"all\",\"is_urgent\":true,\"ack_timeout_seconds\":120,\"replace_key\":\"build:41\"}"
+    }
+   ]
+  },
+  {
+   "id": "bc-false",
+   "error": null,
+   "requests": [
+    {
+     "method": "POST",
+     "path": "/api/agent/rooms/ab12/notifications",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test",
+      "content-type": "application/json"
+     },
+     "body": "{\"message\":\"hi\",\"requires_ack\":false,\"is_urgent\":false}"
+    }
+   ]
+  },
+  {
+   "id": "bc-buttons",
+   "error": null,
+   "requests": [
+    {
+     "method": "POST",
+     "path": "/api/agent/rooms/ab12/notifications",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test",
+      "content-type": "application/json"
+     },
+     "body": "{\"message\":\"Disk\",\"data\":{\"actions\":[{\"label\":\"Open dashboard\",\"type\":\"open_url\",\"url\":\"https://grafana.example.com/d/disk\"},{\"id\":\"clean\",\"label\":\"Clean up now\",\"type\":\"webhook\",\"url\":\"https://ops.example.com/cleanup\",\"style\":\"danger\",\"body\":{\"host\":\"db-2\"}}]}}"
+    }
+   ]
+  },
+  {
+   "id": "bc-link-loc",
+   "error": null,
+   "requests": [
+    {
+     "method": "POST",
+     "path": "/api/agent/rooms/ab12/notifications",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test",
+      "content-type": "application/json"
+     },
+     "body": "{\"message\":\"Meet\",\"data\":{\"url\":\"https://ci.example.com/b/512\",\"button_label\":\"Open\",\"location\":{\"latitude\":25.2048,\"longitude\":55.2708,\"label\":\"Dubai Mall\"}}}"
+    }
+   ]
+  },
+  {
+   "id": "nl-all",
+   "error": null,
+   "requests": [
+    {
+     "method": "GET",
+     "path": "/api/agent/notifications?type=received&room_id=r1&tag=+Deploy+&date=2026-11-11&limit=10&page=2",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test"
+     },
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "nl-legacy",
+   "error": null,
+   "requests": [
+    {
+     "method": "GET",
+     "path": "/api/agent/notifications?limit=10",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test"
+     },
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "nl-none",
+   "error": null,
+   "requests": [
+    {
+     "method": "GET",
+     "path": "/api/agent/notifications",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test"
+     },
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "ng",
+   "error": null,
+   "requests": [
+    {
+     "method": "GET",
+     "path": "/api/agent/notifications/n%2F1%20%3F%C3%A9",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test"
+     },
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "nw-all",
+   "error": null,
+   "requests": [
+    {
+     "method": "GET",
+     "path": "/api/agent/notifications/wait?after=cur+1&timeout=5&limit=10&tag=billing",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test"
+     },
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "nw-none",
+   "error": null,
+   "requests": [
+    {
+     "method": "GET",
+     "path": "/api/agent/notifications/wait",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test"
+     },
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "nw-zero",
+   "error": null,
+   "requests": [
+    {
+     "method": "GET",
+     "path": "/api/agent/notifications/wait?timeout=0",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test"
+     },
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "nack",
+   "error": null,
+   "requests": [
+    {
+     "method": "GET",
+     "path": "/api/agent/notifications/n%2F1/ack/wait?timeout=7",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test"
+     },
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "nrep-min",
+   "error": null,
+   "requests": [
+    {
+     "method": "PUT",
+     "path": "/api/agent/rooms/ab%2012/notifications/n%2F1",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test",
+      "content-type": "application/json"
+     },
+     "body": "{\"message\":\"Build 41: green\"}"
+    }
+   ]
+  },
+  {
+   "id": "nrep-clear",
+   "error": null,
+   "requests": [
+    {
+     "method": "PUT",
+     "path": "/api/agent/rooms/ab12/notifications/n1",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test",
+      "content-type": "application/json"
+     },
+     "body": "{\"message\":\"m\",\"title\":null,\"data\":null}"
+    }
+   ]
+  },
+  {
+   "id": "nrep-set",
+   "error": null,
+   "requests": [
+    {
+     "method": "PUT",
+     "path": "/api/agent/rooms/ab12/notifications/n1",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test",
+      "content-type": "application/json"
+     },
+     "body": "{\"message\":\"q \\\" b \\\\ nl \\n tab \\t ctl \\u001f del  é ☃ 😀 / end    \",\"title\":\"\",\"data\":{\"build\":41}}"
+    }
+   ]
+  },
+  {
+   "id": "nwd",
+   "error": null,
+   "requests": [
+    {
+     "method": "POST",
+     "path": "/api/agent/rooms/ab%2012/notifications/n%2F1/withdraw",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test",
+      "content-type": "application/json"
+     },
+     "body": "{}"
+    }
+   ]
+  },
+  {
+   "id": "ap-req",
+   "error": null,
+   "requests": [
+    {
+     "method": "POST",
+     "path": "/api/agent/rooms/AB12/approvals",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test",
+      "content-type": "application/json",
+      "idempotency-key": "deploy-approval"
+     },
+     "body": "{\"question\":\"Ship release 1.4.0?\",\"title\":\"Release\",\"options\":[\"Ship it\",\"Hold\"],\"correlation_id\":\"deploy\",\"data\":{\"v\":1},\"ttl\":600}"
+    }
+   ]
+  },
+  {
+   "id": "ap-min",
+   "error": null,
+   "requests": [
+    {
+     "method": "POST",
+     "path": "/api/agent/rooms/AB12/approvals",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test",
+      "content-type": "application/json"
+     },
+     "body": "{\"question\":\"Ship?\"}"
+    }
+   ]
+  },
+  {
+   "id": "ap-get",
+   "error": null,
+   "requests": [
+    {
+     "method": "GET",
+     "path": "/api/agent/approvals/a%2F1",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test"
+     },
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "ap-wait",
+   "error": null,
+   "requests": [
+    {
+     "method": "GET",
+     "path": "/api/agent/approvals/a1/wait?timeout=5",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test"
+     },
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "ap-wait0",
+   "error": null,
+   "requests": [
+    {
+     "method": "GET",
+     "path": "/api/agent/approvals/a1/wait",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test"
+     },
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "ap-decision",
+   "error": null,
+   "requests": [
+    {
+     "method": "GET",
+     "path": "/api/agent/approvals/a1/wait",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test"
+     },
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "q-ask",
+   "error": null,
+   "requests": [
+    {
+     "method": "POST",
+     "path": "/api/agent/rooms/ab12/questions",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test",
+      "content-type": "application/json",
+      "idempotency-key": "idem"
+     },
+     "body": "{\"prompt\":\"Which?\",\"context\":\"Build 41\",\"options\":[\"a\",{\"value\":\"b\",\"label\":\"Bee\",\"style\":\"primary\"}],\"text_input\":{\"placeholder\":\"Other?\",\"max_length\":30},\"responder_scope\":\"direct\",\"resolution_policy\":\"first\",\"target_user_id\":\"0198f3c2-6f0e-7d3a-9a55-3b1c2d4e5f60\",\"ttl\":300,\"data\":{\"k\":1},\"correlation_id\":\"c\",\"reply_to\":\"r\",\"attachment_ids\":[\"x\"]}"
+    }
+   ]
+  },
+  {
+   "id": "q-poll",
+   "error": null,
+   "requests": [
+    {
+     "method": "POST",
+     "path": "/api/agent/rooms/AB12/questions",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test",
+      "content-type": "application/json"
+     },
+     "body": "{\"prompt\":\"Lunch?\",\"options\":[\"pizza\",\"tacos\"],\"resolution_policy\":\"all\",\"ttl\":600}"
+    }
+   ]
+  },
+  {
+   "id": "q-get",
+   "error": null,
+   "requests": [
+    {
+     "method": "GET",
+     "path": "/api/agent/questions/q%2F1",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test"
+     },
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "q-wait",
+   "error": null,
+   "requests": [
+    {
+     "method": "GET",
+     "path": "/api/agent/questions/q1/wait?timeout=0",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test"
+     },
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "q-answer",
+   "error": null,
+   "requests": [
+    {
+     "method": "GET",
+     "path": "/api/agent/questions/q1/wait",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test"
+     },
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "q-list",
+   "error": null,
+   "requests": [
+    {
+     "method": "GET",
+     "path": "/api/agent/questions?state=answered",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test"
+     },
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "q-list0",
+   "error": null,
+   "requests": [
+    {
+     "method": "GET",
+     "path": "/api/agent/questions",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test"
+     },
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "q-cancel",
+   "error": null,
+   "requests": [
+    {
+     "method": "POST",
+     "path": "/api/agent/questions/q1/cancel",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test",
+      "content-type": "application/json"
+     },
+     "body": "{}"
+    }
+   ]
+  },
+  {
+   "id": "h-ack",
+   "error": null,
+   "requests": [
+    {
+     "method": "POST",
+     "path": "/api/agent/handoffs",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test",
+      "content-type": "application/json",
+      "idempotency-key": "idem-1"
+     },
+     "body": "{\"kind\":\"ack\",\"prompt\":\"Ack me\",\"audience\":{\"type\":\"direct\",\"user_id\":\"me\"},\"expires_in\":600,\"correlation_id\":\"d\",\"data\":{\"c\":\"abc\"}}"
+    }
+   ]
+  },
+  {
+   "id": "h-ack2",
+   "error": null,
+   "requests": [
+    {
+     "method": "POST",
+     "path": "/api/agent/handoffs",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test",
+      "content-type": "application/json"
+     },
+     "body": "{\"kind\":\"ack\",\"prompt\":\"hi\",\"audience\":{\"type\":\"direct\",\"user_id\":\"user-9\"},\"urgency\":\"passive\",\"reply_to\":\"r\"}"
+    }
+   ]
+  },
+  {
+   "id": "h-ack-empty-key",
+   "error": null,
+   "requests": [
+    {
+     "method": "POST",
+     "path": "/api/agent/handoffs",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test",
+      "content-type": "application/json"
+     },
+     "body": "{\"kind\":\"ack\",\"prompt\":\"hi\",\"audience\":{\"type\":\"direct\",\"user_id\":\"me\"}}"
+    }
+   ]
+  },
+  {
+   "id": "h-ask",
+   "error": null,
+   "requests": [
+    {
+     "method": "POST",
+     "path": "/api/agent/handoffs",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test",
+      "content-type": "application/json"
+     },
+     "body": "{\"kind\":\"question\",\"prompt\":\"Ship?\",\"audience\":{\"type\":\"direct\",\"user_id\":\"me\"},\"options\":[{\"value\":\"deploy\",\"label\":\"deploy\"},{\"value\":\"hold\",\"style\":\"danger\"}]}"
+    }
+   ]
+  },
+  {
+   "id": "h-get",
+   "error": null,
+   "requests": [
+    {
+     "method": "GET",
+     "path": "/api/agent/handoffs/h%2F1",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test"
+     },
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "h-wait",
+   "error": null,
+   "requests": [
+    {
+     "method": "GET",
+     "path": "/api/agent/handoffs/h4/wait?timeout=5",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test"
+     },
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "h-list",
+   "error": null,
+   "requests": [
+    {
+     "method": "GET",
+     "path": "/api/agent/handoffs?state=all",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test"
+     },
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "m-list",
+   "error": null,
+   "requests": [
+    {
+     "method": "GET",
+     "path": "/api/agent/rooms/ab12/metrics",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test"
+     },
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "m-set",
+   "error": null,
+   "requests": [
+    {
+     "method": "PUT",
+     "path": "/api/agent/rooms/ab12/metrics/mrr",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test",
+      "content-type": "application/json"
+     },
+     "body": "{\"value\":12400,\"label\":\"MRR\",\"format\":\"currency\",\"unit\":\"usd\"}"
+    }
+   ]
+  },
+  {
+   "id": "m-set2",
+   "error": null,
+   "requests": [
+    {
+     "method": "PUT",
+     "path": "/api/agent/rooms/ab12/metrics/status",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test",
+      "content-type": "application/json"
+     },
+     "body": "{\"value\":\"All clear\"}"
+    }
+   ]
+  },
+  {
+   "id": "m-del",
+   "error": null,
+   "requests": [
+    {
+     "method": "DELETE",
+     "path": "/api/agent/rooms/ab12/metrics/mrr",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test"
+     },
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "a-manifest",
+   "error": null,
+   "requests": [
+    {
+     "method": "GET",
+     "path": "/api/agent/attachments/att%2F1/manifest",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test"
+     },
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "a-content",
+   "error": null,
+   "requests": [
+    {
+     "method": "GET",
+     "path": "/api/agent/attachments/att_1/content",
+     "headers": {
+      "accept": "*/*",
+      "authorization": "Bearer tok_test"
+     },
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "a-delete",
+   "error": null,
+   "requests": [
+    {
+     "method": "DELETE",
+     "path": "/api/agent/attachments/att_1",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test"
+     },
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "l-push",
+   "error": null,
+   "requests": [
+    {
+     "method": "POST",
+     "path": "/api/agent/rooms/AB12CD/live",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test",
+      "content-type": "application/json"
+     },
+     "body": "{\"correlation_id\":\"c\",\"live_status\":{\"template\":\"timer\",\"state\":\"running\",\"started_at\":1794146700},\"tags\":[\"nightly\"],\"title\":\"q \\\" b \\\\ nl \\n tab \\t ctl \\u001f del  é ☃ 😀 / end    \"}"
+    }
+   ]
+  },
+  {
+   "id": "l-get",
+   "error": null,
+   "requests": [
+    {
+     "method": "GET",
+     "path": "/api/agent/rooms/AB12CD/live/a%2Fb%20c",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test"
+     },
+     "body": null
+    }
+   ]
+  },
+  {
+   "id": "l-claim",
+   "error": null,
+   "requests": [
+    {
+     "method": "POST",
+     "path": "/api/agent/rooms/AB12CD/live/0198f3c2-6f0e-7d3a-9a55-3b1c2d4e5f60/claim",
+     "headers": {
+      "accept": "application/json",
+      "authorization": "Bearer tok_test",
+      "content-type": "application/json"
+     },
+     "body": "{\"action\":\"claim\"}"
+    }
+   ]
+  },
+  {
+   "id": "w-basic",
+   "error": null,
+   "requests": [
+    {
+     "method": "POST",
+     "path": "/api/webhooks/AB12/secret",
+     "headers": {
+      "accept": "application/json",
+      "content-type": "application/json",
+      "idempotency-key": "k1"
+     },
+     "body": "{\"message\":\"hi\",\"action\":2,\"data\":{\"a\":1},\"requires_ack\":true,\"ack_timeout_seconds\":120}"
+    }
+   ]
+  },
+  {
+   "id": "w-null-action",
+   "error": null,
+   "requests": [
+    {
+     "method": "POST",
+     "path": "/api/webhooks/AB12/secret",
+     "headers": {
+      "accept": "application/json",
+      "content-type": "application/json"
+     },
+     "body": "{\"title\":\"Deployment\",\"message\":\"v2 live\",\"action\":null}"
+    }
+   ]
+  },
+  {
+   "id": "w-all",
+   "error": null,
+   "requests": [
+    {
+     "method": "POST",
+     "path": "/api/webhooks/AB12/secret",
+     "headers": {
+      "accept": "application/json",
+      "content-type": "application/json"
+     },
+     "body": "{\"title\":\"Build 512\",\"message\":\"green\",\"action\":3,\"emoji\":\"🚀\",\"icon\":\"rocket\",\"color\":\"#e33122\",\"sound\":\"ting\",\"data\":{\"commit\":\"abc123\"},\"correlation_id\":\"c-1\",\"reply_to\":\"r-1\",\"tags\":[\"deploy\",\"prod\"],\"is_urgent\":true,\"requires_ack\":true,\"ack_mode\":\"all\",\"ack_timeout_seconds\":300,\"live_status\":{\"state\":\"running\",\"template\":\"status\"},\"replace_key\":\"build:41\"}"
+    }
+   ]
+  },
+  {
+   "id": "w-metric",
+   "error": null,
+   "requests": [
+    {
+     "method": "POST",
+     "path": "/api/webhooks/AB12/secret",
+     "headers": {
+      "accept": "application/json",
+      "content-type": "application/json"
+     },
+     "body": "{\"metric\":{\"key\":\"MRR\",\"value\":12400,\"label\":\"MRR\",\"format\":\"currency\",\"unit\":\"USD\"}}"
+    }
+   ]
+  },
+  {
+   "id": "w-tricky",
+   "error": null,
+   "requests": [
+    {
+     "method": "POST",
+     "path": "/api/webhooks/AB12/secret",
+     "headers": {
+      "accept": "application/json",
+      "content-type": "application/json",
+      "idempotency-key": "build 42"
+     },
+     "body": "{\"message\":\"q \\\" b \\\\ nl \\n tab \\t ctl \\u001f del  é ☃ 😀 / end    \",\"data\":{\"k\":\"q \\\" b \\\\ nl \\n tab \\t ctl \\u001f del  é ☃ 😀 / end    \"}}"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,731 @@
+{
+    "contract": "structured-ping-vectors",
+    "version": 1,
+    "about": "Server verdicts for a structured Ping's `data` object, the Idempotency-Key header and a link button label. Written by laravel, read by the cli, sdk and landing tests. Do not edit by hand.",
+    "regenerate": "cd laravel && WRITE_STRUCTURED_PING_VECTORS=1 php artisan test --compact tests/Feature/StructuredPingVectorsContractTest.php",
+    "writtenBy": "laravel/tests/Feature/StructuredPingVectorsContractTest.php",
+    "server": {
+        "data": "POST /api/rooms/{inviteCode}/notifications: StoreNotificationRequest rules() `data` => nullable|array|max:25 (top-level keys), and its after() hook: a non-empty list is refused, then strlen(json_encode($data)) > 8192 is refused. json_encode with default flags: every non-ASCII UTF-16 unit is a six-byte \\uXXXX escape and `/` is \\/. `serverBytes` is measured on the data the validator received, after TrimStrings and ConvertEmptyStringsToNull, and is null when the server refused the shape before measuring. The same 8192 rule is repeated in StoreHandoffRequest, StoreQuestionRequest, StoreAgentApprovalRequest, WebhookTriggerService and LiveStatusStreamService.",
+        "idempotencyKey": "App\\Support\\RequestIdempotency::keyFrom: PHP trim() (space, tab, LF, CR, NUL, vertical tab), then 1 to 255 code points by mb_strlen. `trimmed` is the value stored on the row. Anything else is 422 invalid_idempotency_key. The server accepts any bytes; a header cannot carry them all, so clients may narrow this.",
+        "buttonLabel": "StoreNotificationRequest rules() `data.button_label` => nullable|string|max:26, which Laravel counts in code points (mb_strlen)."
+    },
+    "limits": {
+        "dataMaxBytes": 8192,
+        "dataMaxKeys": 25,
+        "idempotencyKeyMaxCodePoints": 255,
+        "buttonLabelMaxCodePoints": 26
+    },
+    "data": [
+        {
+            "id": "ascii-small",
+            "description": "Plain ASCII object.",
+            "data": {
+                "build": 42,
+                "status": "green",
+                "branch": "main"
+            },
+            "serverBytes": 45,
+            "accepted": true,
+            "reasons": []
+        },
+        {
+            "id": "empty-object",
+            "description": "An empty JSON object. PHP decodes it to [], which the server accepts.",
+            "data": {},
+            "serverBytes": 2,
+            "accepted": true,
+            "reasons": []
+        },
+        {
+            "id": "persian-short",
+            "description": "Persian text: each letter is one UTF-16 unit, six bytes escaped (2 bytes in UTF-8).",
+            "data": {
+                "note": "\u0633\u0644\u0627\u0645 \u062f\u0646\u06cc\u0627"
+            },
+            "serverBytes": 60,
+            "accepted": true,
+            "reasons": []
+        },
+        {
+            "id": "emoji-short",
+            "description": "Astral emoji is a surrogate pair, twelve bytes escaped; the check mark is one BMP unit, six.",
+            "data": {
+                "note": "\ud83e\udd5b\ud83d\udd25 \u2705"
+            },
+            "serverBytes": 42,
+            "accepted": true,
+            "reasons": []
+        },
+        {
+            "id": "json-escapes",
+            "description": "Quote, backslash, newline, tab, C0 control, DEL and HTML characters: escapes both runtimes write the same way.",
+            "data": {
+                "s": "a<b>&'\"\\ one\nline\ttab \u0001 "
+            },
+            "serverBytes": 42,
+            "accepted": true,
+            "reasons": []
+        },
+        {
+            "id": "slash-url",
+            "description": "json_encode writes every slash as \\/, two bytes.",
+            "data": {
+                "link": "https://example.com/a/b/c?x=1/2"
+            },
+            "serverBytes": 48,
+            "accepted": true,
+            "reasons": []
+        },
+        {
+            "id": "nested-arrays",
+            "description": "Nested objects and arrays; only top-level keys count toward the cap.",
+            "data": {
+                "matrix": [
+                    [
+                        1,
+                        2
+                    ],
+                    [
+                        3,
+                        4
+                    ]
+                ],
+                "tags": [
+                    "a",
+                    "b"
+                ],
+                "deep": {
+                    "x": {
+                        "y": [
+                            true,
+                            null
+                        ]
+                    }
+                }
+            },
+            "serverBytes": 72,
+            "accepted": true,
+            "reasons": []
+        },
+        {
+            "id": "numbers-booleans-null",
+            "description": "Numbers JS and PHP serialize identically.",
+            "data": {
+                "int": 42,
+                "neg": -7,
+                "float": 0.5,
+                "yes": true,
+                "no": false,
+                "nothing": null,
+                "big": 9007199254740991
+            },
+            "serverBytes": 91,
+            "accepted": true,
+            "reasons": []
+        },
+        {
+            "id": "persian-and-cyrillic-keys",
+            "description": "Non-ASCII object keys are escaped like values.",
+            "data": {
+                "\u06a9\u0644\u06cc\u062f": "\u0645\u0642\u062f\u0627\u0631",
+                "\u043a\u043b\u044e\u0447": "\u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435"
+            },
+            "serverBytes": 139,
+            "accepted": true,
+            "reasons": []
+        },
+        {
+            "id": "ascii-at-limit",
+            "description": "ASCII payload of exactly 8192 bytes.",
+            "data": {
+                "blob": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            },
+            "serverBytes": 8192,
+            "accepted": true,
+            "reasons": []
+        },
+        {
+            "id": "ascii-one-over",
+            "description": "ASCII payload of 8193 bytes.",
+            "data": {
+                "blob": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            },
+            "serverBytes": 8193,
+            "accepted": false,
+            "reasons": [
+                "too_large"
+            ]
+        },
+        {
+            "id": "slash-at-limit",
+            "description": "Slash-heavy payload (two bytes per slash) of exactly 8192 bytes.",
+            "data": {
+                "blob": "//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////x"
+            },
+            "serverBytes": 8192,
+            "accepted": true,
+            "reasons": []
+        },
+        {
+            "id": "slash-one-over",
+            "description": "Slash-heavy payload of 8193 bytes.",
+            "data": {
+                "blob": "///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////"
+            },
+            "serverBytes": 8193,
+            "accepted": false,
+            "reasons": [
+                "too_large"
+            ]
+        },
+        {
+            "id": "persian-at-limit",
+            "description": "Persian letters (six bytes each) padded with ASCII to exactly 8192 bytes.",
+            "data": {
+                "blob": "\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634xxx"
+            },
+            "serverBytes": 8192,
+            "accepted": true,
+            "reasons": []
+        },
+        {
+            "id": "persian-one-over",
+            "description": "The same Persian payload at 8193 bytes.",
+            "data": {
+                "blob": "\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634xxxx"
+            },
+            "serverBytes": 8193,
+            "accepted": false,
+            "reasons": [
+                "too_large"
+            ]
+        },
+        {
+            "id": "persian-1500-chars",
+            "description": "About 3 KB as UTF-8 but 9 KB as json_encode writes it: the cli 5cf94bd case.",
+            "data": {
+                "note": "\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634"
+            },
+            "serverBytes": 9011,
+            "accepted": false,
+            "reasons": [
+                "too_large"
+            ]
+        },
+        {
+            "id": "emoji-at-limit",
+            "description": "Astral emoji (twelve bytes each) padded with ASCII to exactly 8192 bytes.",
+            "data": {
+                "blob": "\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5bxxxxxxxxx"
+            },
+            "serverBytes": 8192,
+            "accepted": true,
+            "reasons": []
+        },
+        {
+            "id": "emoji-one-over",
+            "description": "The same emoji payload at 8193 bytes.",
+            "data": {
+                "blob": "\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5bxxxxxxxxxx"
+            },
+            "serverBytes": 8193,
+            "accepted": false,
+            "reasons": [
+                "too_large"
+            ]
+        },
+        {
+            "id": "emoji-800-chars",
+            "description": "800 astral emoji: 3.2 KB as UTF-8, 9.6 KB as json_encode writes it.",
+            "data": {
+                "note": "\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b"
+            },
+            "serverBytes": 9611,
+            "accepted": false,
+            "reasons": [
+                "too_large"
+            ]
+        },
+        {
+            "id": "keys-25",
+            "description": "Exactly 25 top-level keys.",
+            "data": {
+                "k1": 1,
+                "k2": 2,
+                "k3": 3,
+                "k4": 4,
+                "k5": 5,
+                "k6": 6,
+                "k7": 7,
+                "k8": 8,
+                "k9": 9,
+                "k10": 10,
+                "k11": 11,
+                "k12": 12,
+                "k13": 13,
+                "k14": 14,
+                "k15": 15,
+                "k16": 16,
+                "k17": 17,
+                "k18": 18,
+                "k19": 19,
+                "k20": 20,
+                "k21": 21,
+                "k22": 22,
+                "k23": 23,
+                "k24": 24,
+                "k25": 25
+            },
+            "serverBytes": 208,
+            "accepted": true,
+            "reasons": []
+        },
+        {
+            "id": "keys-26",
+            "description": "26 top-level keys.",
+            "data": {
+                "k1": 1,
+                "k2": 2,
+                "k3": 3,
+                "k4": 4,
+                "k5": 5,
+                "k6": 6,
+                "k7": 7,
+                "k8": 8,
+                "k9": 9,
+                "k10": 10,
+                "k11": 11,
+                "k12": 12,
+                "k13": 13,
+                "k14": 14,
+                "k15": 15,
+                "k16": 16,
+                "k17": 17,
+                "k18": 18,
+                "k19": 19,
+                "k20": 20,
+                "k21": 21,
+                "k22": 22,
+                "k23": 23,
+                "k24": 24,
+                "k25": 25,
+                "k26": 26
+            },
+            "serverBytes": 217,
+            "accepted": false,
+            "reasons": [
+                "too_many_keys"
+            ]
+        },
+        {
+            "id": "keys-26-and-over-8kb",
+            "description": "Breaks both caps at once.",
+            "data": {
+                "k1": 1,
+                "k2": 2,
+                "k3": 3,
+                "k4": 4,
+                "k5": 5,
+                "k6": 6,
+                "k7": 7,
+                "k8": 8,
+                "k9": 9,
+                "k10": 10,
+                "k11": 11,
+                "k12": 12,
+                "k13": 13,
+                "k14": 14,
+                "k15": 15,
+                "k16": 16,
+                "k17": 17,
+                "k18": 18,
+                "k19": 19,
+                "k20": 20,
+                "k21": 21,
+                "k22": 22,
+                "k23": 23,
+                "k24": 24,
+                "k25": 25,
+                "k26": 26,
+                "blob": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            },
+            "serverBytes": 8427,
+            "accepted": false,
+            "reasons": [
+                "too_large",
+                "too_many_keys"
+            ]
+        },
+        {
+            "id": "nested-keys-not-counted",
+            "description": "One top-level key holding 40 nested keys: only the top level counts.",
+            "data": {
+                "outer": {
+                    "k1": 1,
+                    "k2": 2,
+                    "k3": 3,
+                    "k4": 4,
+                    "k5": 5,
+                    "k6": 6,
+                    "k7": 7,
+                    "k8": 8,
+                    "k9": 9,
+                    "k10": 10,
+                    "k11": 11,
+                    "k12": 12,
+                    "k13": 13,
+                    "k14": 14,
+                    "k15": 15,
+                    "k16": 16,
+                    "k17": 17,
+                    "k18": 18,
+                    "k19": 19,
+                    "k20": 20,
+                    "k21": 21,
+                    "k22": 22,
+                    "k23": 23,
+                    "k24": 24,
+                    "k25": 25,
+                    "k26": 26,
+                    "k27": 27,
+                    "k28": 28,
+                    "k29": 29,
+                    "k30": 30,
+                    "k31": 31,
+                    "k32": 32,
+                    "k33": 33,
+                    "k34": 34,
+                    "k35": 35,
+                    "k36": 36,
+                    "k37": 37,
+                    "k38": 38,
+                    "k39": 39,
+                    "k40": 40
+                }
+            },
+            "serverBytes": 353,
+            "accepted": true,
+            "reasons": []
+        },
+        {
+            "id": "top-level-list",
+            "description": "A JSON array, not an object.",
+            "data": [
+                1,
+                2,
+                3
+            ],
+            "serverBytes": null,
+            "accepted": false,
+            "reasons": [
+                "not_object"
+            ]
+        },
+        {
+            "id": "numeric-keys-look-like-list",
+            "description": "An object keyed \"0\",\"1\": PHP decodes it to a list and the server refuses it as one.",
+            "data": {
+                "0": "a",
+                "1": "b"
+            },
+            "serverBytes": null,
+            "accepted": false,
+            "reasons": [
+                "not_object"
+            ]
+        },
+        {
+            "id": "empty-string-becomes-null",
+            "description": "ConvertEmptyStringsToNull runs before validation, so \"\" is measured as null (four bytes, not two).",
+            "data": {
+                "note": "",
+                "kept": "x"
+            },
+            "serverBytes": 24,
+            "accepted": true,
+            "reasons": []
+        },
+        {
+            "id": "empty-string-null-expansion-at-limit",
+            "description": "Measures 8192 bytes as sent, 8194 once the empty string is null: refused.",
+            "data": {
+                "e": "",
+                "blob": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            },
+            "serverBytes": 8194,
+            "accepted": false,
+            "reasons": [
+                "too_large"
+            ]
+        },
+        {
+            "id": "padded-string-is-trimmed",
+            "description": "TrimStrings runs before validation, so the padding is not measured.",
+            "data": {
+                "note": "   spaced   ",
+                "n": 1
+            },
+            "serverBytes": 23,
+            "accepted": true,
+            "reasons": []
+        }
+    ],
+    "idempotencyKey": [
+        {
+            "id": "uuid",
+            "description": "A UUID, what landing sends.",
+            "key": "0b8b3e6e-4c1a-4d7e-9f3a-2a6d9c1e5b70",
+            "codePoints": 36,
+            "accepted": true,
+            "trimmed": "0b8b3e6e-4c1a-4d7e-9f3a-2a6d9c1e5b70"
+        },
+        {
+            "id": "plain",
+            "description": "Ordinary token.",
+            "key": "deploy-2026-11-05",
+            "codePoints": 17,
+            "accepted": true,
+            "trimmed": "deploy-2026-11-05"
+        },
+        {
+            "id": "inner-spaces",
+            "description": "Spaces inside the key are kept (cli 9372c7c).",
+            "key": "build 42 retry",
+            "codePoints": 14,
+            "accepted": true,
+            "trimmed": "build 42 retry"
+        },
+        {
+            "id": "leading-trailing-spaces",
+            "description": "Padded with spaces: the server keys on the trimmed value.",
+            "key": "  padded key  ",
+            "codePoints": 14,
+            "accepted": true,
+            "trimmed": "padded key"
+        },
+        {
+            "id": "tab-newline-edges",
+            "description": "PHP trim() strips tab, CR and LF at both ends.",
+            "key": "\t\nedge\r\n",
+            "codePoints": 8,
+            "accepted": true,
+            "trimmed": "edge"
+        },
+        {
+            "id": "nul-and-vtab-edges",
+            "description": "PHP trim() also strips NUL and vertical tab.",
+            "key": "\u0000\u000bnul\u0000",
+            "codePoints": 6,
+            "accepted": true,
+            "trimmed": "nul"
+        },
+        {
+            "id": "form-feed-edges",
+            "description": "PHP trim() does NOT strip form feed (JS String.trim does), so it stays.",
+            "key": "\fff\f",
+            "codePoints": 4,
+            "accepted": true,
+            "trimmed": "\fff\f"
+        },
+        {
+            "id": "nbsp-edges",
+            "description": "PHP trim() is byte-wise and does NOT strip no-break space (JS String.trim does).",
+            "key": "\u00a0nbsp\u00a0",
+            "codePoints": 6,
+            "accepted": true,
+            "trimmed": "\u00a0nbsp\u00a0"
+        },
+        {
+            "id": "empty",
+            "description": "Empty header value.",
+            "key": "",
+            "codePoints": 0,
+            "accepted": false,
+            "trimmed": null
+        },
+        {
+            "id": "only-spaces",
+            "description": "Empty after trim.",
+            "key": "     ",
+            "codePoints": 5,
+            "accepted": false,
+            "trimmed": null
+        },
+        {
+            "id": "only-trim-controls",
+            "description": "Empty after trim.",
+            "key": "\t\n\r",
+            "codePoints": 3,
+            "accepted": false,
+            "trimmed": null
+        },
+        {
+            "id": "len-255",
+            "description": "255 ASCII characters.",
+            "key": "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk",
+            "codePoints": 255,
+            "accepted": true,
+            "trimmed": "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
+        },
+        {
+            "id": "len-256",
+            "description": "256 ASCII characters.",
+            "key": "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk",
+            "codePoints": 256,
+            "accepted": false,
+            "trimmed": null
+        },
+        {
+            "id": "len-255-after-trim",
+            "description": "255 characters padded to 259 with spaces: the cap applies after trim.",
+            "key": "  kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk  ",
+            "codePoints": 259,
+            "accepted": true,
+            "trimmed": "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
+        },
+        {
+            "id": "len-256-after-trim",
+            "description": "256 characters padded with spaces.",
+            "key": "  kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk  ",
+            "codePoints": 260,
+            "accepted": false,
+            "trimmed": null
+        },
+        {
+            "id": "non-ascii-persian",
+            "description": "Persian key: valid for the server, which counts code points.",
+            "key": "\u06a9\u0644\u06cc\u062f-\u06f1",
+            "codePoints": 6,
+            "accepted": true,
+            "trimmed": "\u06a9\u0644\u06cc\u062f-\u06f1"
+        },
+        {
+            "id": "non-ascii-latin1",
+            "description": "Latin-1 letter: one code point, two UTF-8 bytes.",
+            "key": "caf\u00e9",
+            "codePoints": 4,
+            "accepted": true,
+            "trimmed": "caf\u00e9"
+        },
+        {
+            "id": "persian-130-chars",
+            "description": "130 code points but 260 UTF-8 bytes: the cap counts code points.",
+            "key": "\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634",
+            "codePoints": 130,
+            "accepted": true,
+            "trimmed": "\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634"
+        },
+        {
+            "id": "emoji-255-chars",
+            "description": "255 astral emoji: 255 code points, 510 UTF-16 units, 1020 bytes.",
+            "key": "\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b",
+            "codePoints": 255,
+            "accepted": true,
+            "trimmed": "\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b"
+        },
+        {
+            "id": "emoji-256-chars",
+            "description": "256 astral emoji.",
+            "key": "\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b",
+            "codePoints": 256,
+            "accepted": false,
+            "trimmed": null
+        },
+        {
+            "id": "inner-control-char",
+            "description": "A C0 control character inside the key.",
+            "key": "a\u0001b",
+            "codePoints": 3,
+            "accepted": true,
+            "trimmed": "a\u0001b"
+        },
+        {
+            "id": "inner-tab",
+            "description": "A tab inside the key.",
+            "key": "a\tb",
+            "codePoints": 3,
+            "accepted": true,
+            "trimmed": "a\tb"
+        },
+        {
+            "id": "inner-del",
+            "description": "DEL (0x7f) inside the key.",
+            "key": "ab",
+            "codePoints": 3,
+            "accepted": true,
+            "trimmed": "ab"
+        }
+    ],
+    "buttonLabel": [
+        {
+            "id": "ascii-short",
+            "description": "Ordinary label.",
+            "label": "Open build",
+            "codePoints": 10,
+            "accepted": true
+        },
+        {
+            "id": "ascii-26",
+            "description": "26 ASCII characters.",
+            "label": "aaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "codePoints": 26,
+            "accepted": true
+        },
+        {
+            "id": "ascii-27",
+            "description": "27 ASCII characters.",
+            "label": "aaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "codePoints": 27,
+            "accepted": false
+        },
+        {
+            "id": "emoji-26",
+            "description": "26 astral emoji: 26 code points, 52 UTF-16 units (cli acc5c1c).",
+            "label": "\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b",
+            "codePoints": 26,
+            "accepted": true
+        },
+        {
+            "id": "emoji-27",
+            "description": "27 astral emoji.",
+            "label": "\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b\ud83e\udd5b",
+            "codePoints": 27,
+            "accepted": false
+        },
+        {
+            "id": "persian-26",
+            "description": "26 Persian letters.",
+            "label": "\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634",
+            "codePoints": 26,
+            "accepted": true
+        },
+        {
+            "id": "persian-27",
+            "description": "27 Persian letters.",
+            "label": "\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634\u0634",
+            "codePoints": 27,
+            "accepted": false
+        },
+        {
+            "id": "combining-26",
+            "description": "Thirteen e + combining acute accent pairs: 26 code points, 13 visible characters.",
+            "label": "e\u0301e\u0301e\u0301e\u0301e\u0301e\u0301e\u0301e\u0301e\u0301e\u0301e\u0301e\u0301e\u0301",
+            "codePoints": 26,
+            "accepted": true
+        },
+        {
+            "id": "combining-28",
+            "description": "Fourteen e + combining acute accent pairs: 28 code points, 14 visible characters.",
+            "label": "e\u0301e\u0301e\u0301e\u0301e\u0301e\u0301e\u0301e\u0301e\u0301e\u0301e\u0301e\u0301e\u0301e\u0301",
+            "codePoints": 28,
+            "accepted": false
+        },
+        {
+            "id": "zwj-family-26",
+            "description": "Three family emoji (seven code points each) and five letters: 26 code points.",
+            "label": "\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc67\u200d\ud83d\udc66\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc67\u200d\ud83d\udc66\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc67\u200d\ud83d\udc66abcde",
+            "codePoints": 26,
+            "accepted": true
+        }
+    ]
+}
